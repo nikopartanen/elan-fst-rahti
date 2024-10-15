@@ -405,11 +405,11 @@ def print_unknown_words(elan_file_path, transcription_tier="orthT", language="kp
 
     return table_output
 
-@app.route('/elan-fst/')  
+@app.route('/')  
 def upload():  
     return render_template("file_upload_form.html")  
 
-@app.route('/elan-fst/success', methods = ['GET', 'POST'])  
+@app.route('/success', methods = ['GET', 'POST'])  
 def success():  
 
     f = request.files['file']  
@@ -436,7 +436,7 @@ def success():
 
     return render_template("success.html", name = f.filename, table = table)  
 
-@app.route('/elan-fst/return-files')
+@app.route('/return-files')
 def return_files():
     try:
 #        f = request.files['file']
