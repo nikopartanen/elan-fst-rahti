@@ -5,6 +5,10 @@ import re
 from uralicNLP.cg3 import Cg3
 from flask import *
 import os
+from pathlib import Path
+from flask_table import Table, Col
+import pympi
+from uralicNLP import uralicApi
 
 app = Flask(__name__, template_folder="templates")
 
@@ -358,11 +362,6 @@ def annotate_oulu(root, cg):
     elan_annotated = annotate_elan(elan_tokenized, cg = cg, orig_tier_part = 'word', lemma_tier_part = 'lemma', pos_tier_part = 'pos', morph_tier_part = 'morph', syntax_tier_part = 'syntax', syntax = True)
 
     return(elan_annotated)
-
-from pathlib import Path
-from flask_table import Table, Col
-import pympi
-from uralicNLP import uralicApi
 
 def print_unknown_words(elan_file_path, transcription_tier = "orthT", language = "kpv"):
     
