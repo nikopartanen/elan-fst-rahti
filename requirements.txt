@@ -1,0 +1,6 @@
+gunicorn
+flask
+flask-bootstrap 
+flask-wtf
+uralicnlp
+pympi-ling
