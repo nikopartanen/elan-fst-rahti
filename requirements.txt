@@ -5,3 +5,4 @@ flask-wtf
 uralicnlp
 pympi-ling
 nltk
+flask_table
