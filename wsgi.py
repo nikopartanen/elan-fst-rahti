@@ -363,55 +363,48 @@ def annotate_oulu(root, cg):
 
     return(elan_annotated)
 
-def print_unknown_words(elan_file_path, transcription_tier = "orthT", language = "kpv"):
-    
+def print_unknown_words(elan_file_path, transcription_tier="orthT", language="kpv"):
     session_name = Path(elan_file_path).stem
 
-    elan_file = pympi.Elan.Eaf(file_path = elan_file_path)
+    # Load the ELAN file
+    elan_file = pympi.Elan.Eaf(file_path=elan_file_path)
 
+    # Get the transcription tiers for the given linguistic type
     transcription_tiers = elan_file.get_tier_ids_for_linguistic_type(transcription_tier)
 
     missed_annotations = []
 
+    # Iterate over transcription tiers and analyze words
     for transcription_tier in transcription_tiers:
-
         annotation_values = elan_file.get_annotation_data_for_tier(transcription_tier)
 
         for annotation_value in annotation_values:
-
             text_content = annotation_value[2]
-            text_content = re.sub("…", ".", text_content) # It seems word_tokenize doesn't handle "…"
+            # Clean up text content before tokenizing
+            text_content = re.sub("…", ".", text_content)
             text_content = re.sub("\[\[unclear\]\]", "", text_content)
 
+            # Tokenize the text content
             words = word_tokenize(text_content)
 
+            # Analyze each word
             for word in words:
-
                 analysis = uralicApi.analyze(word, language)
                 if not analysis:
                     missed_annotations.append(word)
-                    
-    # Declare your table
-    class ItemTable(Table):
-        name = Col('Form')
-        description = Col('Count')
 
-    # Get some objects
-    class Item(object):
-        def __init__(self, name, description):
-            self.name = name
-            self.description = description
-        
-    items = []
+    # Create a list of dictionaries with word counts
+    word_counts = []
+    for count, word in sorted(((missed_annotations.count(e), e) for e in set(missed_annotations)), reverse=True):
+        word_counts.append({"Form": word, "Count": count})
 
-    for count, elem in sorted(((missed_annotations.count(e), e) for e in set(missed_annotations)), reverse=True):
-        items.append(Item(elem, count))
-    
-    # Populate the table
-    table = ItemTable(items)
+    # Return or print the table as a formatted string
+    table_output = "Form\tCount\n"
+    table_output += "-" * 20 + "\n"
+    for item in word_counts:
+        table_output += f"{item['Form']}\t{item['Count']}\n"
 
-    return(table)
-
+    return table_output
 
 @app.route('/elan-fst/')  
 def upload():  
