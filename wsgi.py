@@ -6,7 +6,6 @@ from uralicNLP.cg3 import Cg3
 from flask import *
 import os
 from pathlib import Path
-from flask_table import Table, Col
 import pympi
 from uralicNLP import uralicApi
 
