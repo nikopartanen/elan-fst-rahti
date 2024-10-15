@@ -3,6 +3,11 @@ import xml.etree.ElementTree as ET
 from operator import itemgetter
 import re
 from uralicNLP.cg3 import Cg3
+from flask import *
+import os
+
+app = Flask(__name__, template_folder="templates")
+
 
 def get_elan_info(root, orig_tier_identifier = 'orth'):
 
@@ -407,4 +412,47 @@ def print_unknown_words(elan_file_path, transcription_tier = "orthT", language =
     table = ItemTable(items)
 
     return(table)
+
+
+@app.route('/elan-fst/')  
+def upload():  
+    return render_template("file_upload_form.html")  
+
+@app.route('/elan-fst/success', methods = ['GET', 'POST'])  
+def success():  
+
+    f = request.files['file']  
+
+    elan_xml = f.stream.read().decode("utf-8")
+
+    root = ET.fromstring(elan_xml)
+
+    tier_structure = detect_tier_structure(root)
+
+    if tier_structure == 'freiburg':
+
+        cg = Cg3("kpv")
+        elan_annotated = annotate_freiburg(root, cg = cg)
+        ET.ElementTree(elan_annotated).write(f"temp.eaf", xml_declaration=True, encoding='utf-8', method="xml")
+
+    if tier_structure == 'oulu':
+
+        cg = Cg3("smn")
+        elan_annotated = annotate_oulu(root, cg = cg)
+        ET.ElementTree(elan_annotated).write(f"temp.eaf", xml_declaration=True, encoding='utf-8', method="xml")
+
+    table = print_unknown_words("temp.eaf")
+
+    return render_template("success.html", name = f.filename, table = table)  
+
+@app.route('/elan-fst/return-files')
+def return_files():
+    try:
+#        f = request.files['file']
+        return send_file('temp.eaf',  mimetype='application/xml', attachment_filename="elan_with_annotations.eaf", as_attachment=True)
+    except Exception as e:
+        return str(e)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8080)
 
